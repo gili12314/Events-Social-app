@@ -1,10 +1,45 @@
+// src/controllers/commentController.ts
 import { Request, Response } from "express";
 import mongoose from "mongoose";
 import Comment, { IComment } from "../models/Comment";
 import Event from "../models/Event";
 import { AuthRequest } from "../middleware/auth";
 
-// יצירת תגובה לאירוע
+/**
+ * @swagger
+ * /comments/{eventId}:
+ *   post:
+ *     summary: "Create a comment on an event"
+ *     description: "Creates a new comment on the specified event by the authenticated user."
+ *     parameters:
+ *       - in: path
+ *         name: eventId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The ID of the event to comment on.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               text:
+ *                 type: string
+ *                 example: "This is a comment on the event."
+ *     responses:
+ *       201:
+ *         description: "Comment created successfully"
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Comment'
+ *       404:
+ *         description: "Event not found"
+ *       500:
+ *         description: "Error creating comment"
+ */
 export const createComment = async (req: Request, res: Response): Promise<void> => {
   try {
     const { text } = req.body;
@@ -31,7 +66,31 @@ export const createComment = async (req: Request, res: Response): Promise<void> 
   }
 };
 
-// שליפת תגובות לאירוע
+/**
+ * @swagger
+ * /comments/{eventId}:
+ *   get:
+ *     summary: "Get comments for an event"
+ *     description: "Retrieves all comments for the specified event, sorted by creation date in descending order."
+ *     parameters:
+ *       - in: path
+ *         name: eventId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The ID of the event.
+ *     responses:
+ *       200:
+ *         description: "A list of comments for the event"
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Comment'
+ *       500:
+ *         description: "Error fetching comments"
+ */
 export const getCommentsByEvent = async (req: Request, res: Response): Promise<void> => {
   try {
     const eventId = req.params.eventId;
@@ -44,7 +103,43 @@ export const getCommentsByEvent = async (req: Request, res: Response): Promise<v
   }
 };
 
-// עדכון תגובה
+/**
+ * @swagger
+ * /comments/update/{commentId}:
+ *   put:
+ *     summary: "Update a comment"
+ *     description: "Updates the text of an existing comment. Only the owner of the comment can update it."
+ *     parameters:
+ *       - in: path
+ *         name: commentId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The ID of the comment to update.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               text:
+ *                 type: string
+ *                 example: "This is the updated comment text."
+ *     responses:
+ *       200:
+ *         description: "Comment updated successfully"
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Comment'
+ *       404:
+ *         description: "Comment not found"
+ *       403:
+ *         description: "Unauthorized to update this comment"
+ *       500:
+ *         description: "Error updating comment"
+ */
 export const updateComment = async (req: Request, res: Response): Promise<void> => {
   try {
     const commentId = req.params.commentId;
@@ -68,7 +163,37 @@ export const updateComment = async (req: Request, res: Response): Promise<void> 
   }
 };
 
-// מחיקת תגובה
+/**
+ * @swagger
+ * /comments/delete/{commentId}:
+ *   delete:
+ *     summary: "Delete a comment"
+ *     description: "Deletes an existing comment. Only the owner of the comment can delete it."
+ *     parameters:
+ *       - in: path
+ *         name: commentId
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: The ID of the comment to delete.
+ *     responses:
+ *       200:
+ *         description: "Comment deleted successfully"
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Comment deleted successfully"
+ *       404:
+ *         description: "Comment not found"
+ *       403:
+ *         description: "Unauthorized to delete this comment"
+ *       500:
+ *         description: "Error deleting comment"
+ */
 export const deleteComment = async (req: Request, res: Response): Promise<void> => {
   try {
     const commentId = req.params.commentId;

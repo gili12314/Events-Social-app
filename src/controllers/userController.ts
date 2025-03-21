@@ -1,10 +1,47 @@
+// src/controllers/userController.ts
 import { Request, Response } from "express";
 import User from "../models/User";
 import { AuthRequest } from "../middleware/auth";
 import fs from "fs";
 import path from "path";
 
-// העלאת תמונת פרופיל
+/**
+ * @swagger
+ * /users/profile-picture:
+ *   put:
+ *     summary: "Upload profile picture"
+ *     description: "Uploads a new profile picture for the authenticated user, replacing the old one if it exists."
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               image:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: "Profile picture updated successfully"
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 profileImage:
+ *                   type: string
+ *       400:
+ *         description: "No file uploaded"
+ *       404:
+ *         description: "User not found"
+ *       500:
+ *         description: "Error uploading profile picture"
+ */
 export const uploadProfilePicture = async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = (req as AuthRequest).user;
@@ -37,6 +74,45 @@ export const uploadProfilePicture = async (req: Request, res: Response): Promise
   }
 };
 
+/**
+ * @swagger
+ * /users/update:
+ *   put:
+ *     summary: "Update user profile"
+ *     description: "Updates the user's profile information such as username and email."
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       description: "User profile data to update"
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *                 example: "newUsername"
+ *               email:
+ *                 type: string
+ *                 example: "newemail@example.com"
+ *     responses:
+ *       200:
+ *         description: "Profile updated successfully"
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 user:
+ *                   $ref: '#/components/schemas/User'
+ *       404:
+ *         description: "User not found"
+ *       500:
+ *         description: "Error updating profile"
+ */
 export const updateUserProfile = async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = (req as AuthRequest).user;

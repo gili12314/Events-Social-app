@@ -13,6 +13,8 @@ import { apiLimiter } from "./middleware/rateLimit";
 import morgan from "morgan";
 import compression from "compression";
 import commentRoutes from "./routes/commentRoutes";
+import swaggerUi from "swagger-ui-express";
+import swaggerSpec from "./swaggerSpec";
 
 
 
@@ -39,6 +41,7 @@ app.use(
 );
 app.use(morgan("dev"));
 app.use(compression());
+app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 
 app.use("/api/", apiLimiter);
