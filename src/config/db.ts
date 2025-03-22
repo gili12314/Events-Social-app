@@ -1,3 +1,4 @@
+// src/config/db.ts
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 
@@ -5,6 +6,11 @@ dotenv.config();
 
 const connectDB = async () => {
   try {
+    // אם אנו בסביבת בדיקה, דלג על חיבור ל־MONGO_URI
+    if (process.env.NODE_ENV === "test") {
+      console.log("Skipping DB connection in test environment");
+      return;
+    }
     await mongoose.connect(process.env.MONGO_URI as string);
     console.log("MongoDB connected successfully");
   } catch (error) {
