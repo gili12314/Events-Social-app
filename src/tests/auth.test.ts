@@ -1,11 +1,9 @@
-// src/tests/auth.test.ts
 import request from "supertest";
 import app from "../server";
 
 describe("Auth Endpoints", () => {
   let token: string;
   let userId: string;
-  // שימוש באימייל ייחודי כדי למנוע התנגשויות בכל ריצה
   const uniqueEmail = `testuser_${Date.now()}@example.com`;
 
   describe("Registration", () => {
@@ -24,12 +22,11 @@ describe("Auth Endpoints", () => {
     });
 
     it("should not register a user with an already used email", async () => {
-      // ניסיון לרישום עם אותו אימייל, צפוי לקבל שגיאה (400 או 500 בהתאם למימוש)
       const res = await request(app)
         .post("/api/auth/register")
         .send({
           username: "testuser2",
-          email: uniqueEmail, // אותו אימייל כמו הקודם
+          email: uniqueEmail, 
           password: "password456",
         });
       expect(res.statusCode).toBeGreaterThanOrEqual(400);
@@ -41,7 +38,6 @@ describe("Auth Endpoints", () => {
         .send({
           username: "testuser_missing_password",
           email: `testmissing_${Date.now()}@example.com`
-          // password חסר
         });
       expect(res.statusCode).toBeGreaterThanOrEqual(400);
     });

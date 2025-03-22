@@ -4,7 +4,6 @@ import app from "../server";
 describe("Events Endpoints", () => {
   let token: string;
   let eventId: string;
-  // שימוש באימייל ייחודי למניעת התנגשויות
   const uniqueEmail = `eventtest_${Date.now()}@example.com`;
   const eventData = {
     title: "Test Event",
@@ -14,7 +13,6 @@ describe("Events Endpoints", () => {
   };
 
   beforeAll(async () => {
-    // רישום והתחברות למשתמש עבור בדיקות אירועים
     const resRegister = await request(app)
       .post("/api/auth/register")
       .send({

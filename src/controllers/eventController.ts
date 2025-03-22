@@ -1,4 +1,3 @@
-// src/controllers/eventController.ts
 import { Request, Response } from "express";
 import Event from "../models/Event";
 import { AuthRequest } from "../middleware/auth";
@@ -292,7 +291,7 @@ export const joinEvent = async (req: Request, res: Response): Promise<void> => {
       event.participants.push(userId);
       await event.save();
 
-      // יצירת התראה לבעל האירוע
+      // create notification to the event owner
       if (event.createdBy.toString() !== userId.toString()) {
         await Notification.create({
           recipient: event.createdBy,

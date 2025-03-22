@@ -1,4 +1,3 @@
-// swaggerSpec.ts
 import swaggerJSDoc from "swagger-jsdoc";
 import options from "./swaggerOptions";
 

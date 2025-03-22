@@ -5,7 +5,6 @@ import User from "../models/User";
 
 dotenv.config();
 
-// 🔹 אימות עם Google
 passport.use(
   new GoogleStrategy(
     {
@@ -29,15 +28,12 @@ passport.use(
 
         done(null, user);
       } catch (error) {
-        done(error, undefined); // ✅ שינוי null ל- undefined
+        done(error, undefined);
       }
     }
   )
 );
 
-
-
-// סידור המשתמש בתוך ה-Session
 passport.serializeUser((user, done) => {
   done(null, (user as any)._id);
 });

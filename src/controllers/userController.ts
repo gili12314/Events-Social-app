@@ -1,4 +1,3 @@
-// src/controllers/userController.ts
 import { Request, Response } from "express";
 import User from "../models/User";
 import { AuthRequest } from "../middleware/auth";
@@ -57,7 +56,7 @@ export const uploadProfilePicture = async (req: Request, res: Response): Promise
       return;
     }
 
-    // מחיקת תמונה קודמת אם קיימת
+    // delete old photo if exists
     if (user.profileImage) {
       const oldImagePath = path.join(__dirname, "..", user.profileImage);
       if (fs.existsSync(oldImagePath)) {
