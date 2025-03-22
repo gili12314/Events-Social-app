@@ -1,4 +1,3 @@
-// src/swaggerOptions.ts
 const options = {
     definition: {
       openapi: "3.0.0",
@@ -9,7 +8,7 @@ const options = {
       },
       servers: [
         {
-          url: "http://localhost:3000/api", // כתובת בסיס ל-API
+          url: "http://localhost:3000/api", 
         },
       ],
       components: {
@@ -87,7 +86,6 @@ const options = {
         },
       ],
     },
-    // ודא שהנתיבים כוללים את הקבצים המתאימים מתוך src
     apis: ["./src/routes/*.ts", "./src/controllers/*.ts"],
   };
   

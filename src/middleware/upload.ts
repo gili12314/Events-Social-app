@@ -1,17 +1,16 @@
 import multer from "multer";
 import path from "path";
 
-// הגדרת אחסון מקומי עבור `multer`
+// Setting up local storage for `multer`
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "uploads/"); // התמונות ישמרו בתיקייה `uploads`
+    cb(null, "uploads/"); 
   },
   filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`); // שמירת הקובץ עם שם ייחודי
+    cb(null, `${Date.now()}-${file.originalname}`); 
   },
 });
 
-// הגדרת סינון קבצים - קבלת תמונות בלבד
 const fileFilter = (req: any, file: Express.Multer.File, cb: any) => {
   const allowedTypes = /jpeg|jpg|png/;
   const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
@@ -24,7 +23,6 @@ const fileFilter = (req: any, file: Express.Multer.File, cb: any) => {
   }
 };
 
-// הגבלת גודל קובץ ל-5MB
 const upload = multer({
   storage,
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB

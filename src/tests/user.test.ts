@@ -7,7 +7,6 @@ describe("User Endpoints", () => {
   const uniqueEmail = `userTest_${Date.now()}@example.com`;
 
   beforeAll(async () => {
-    // רישום משתמש חדש
     const resRegister = await request(app)
       .post("/api/auth/register")
       .send({
@@ -18,7 +17,6 @@ describe("User Endpoints", () => {
     expect(resRegister.statusCode).toEqual(201);
     userId = resRegister.body._id;
 
-    // התחברות למשתמש
     const resLogin = await request(app)
       .post("/api/auth/login")
       .send({
@@ -48,7 +46,6 @@ describe("User Endpoints", () => {
       const res = await request(app)
         .put("/api/users/profile-picture")
         .set("Authorization", `Bearer ${token}`)
-        // נניח שקובץ הבדיקה נמצא בנתיב src/tests/test-files/test.jpg
         .attach("image", "src/tests/test-files/test.jpg");
       expect(res.statusCode).toEqual(200);
       expect(res.body).toHaveProperty("message", "Profile picture updated");
@@ -64,7 +61,6 @@ describe("User Endpoints", () => {
           username: "shouldNotUpdate",
           email: uniqueEmail,
         });
-      // צפוי לקבל 401 Unauthorized
       expect(res.statusCode).toEqual(401);
     });
 
@@ -83,7 +79,6 @@ describe("User Endpoints", () => {
       const res = await request(app)
         .put("/api/users/profile-picture")
         .set("Authorization", `Bearer ${token}`);
-      // צפוי לקבל 400 בגלל שאין קובץ
       expect(res.statusCode).toBeGreaterThanOrEqual(400);
     });
   });

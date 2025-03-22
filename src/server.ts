@@ -1,7 +1,7 @@
 import express from "express";
 import session from "express-session";
 import passport from "passport";
-import "./config/passport"; // חיבור passport
+import "./config/passport"; 
 import dotenv from "dotenv";
 import cors from "cors";
 import connectDB from "./config/db";
@@ -21,7 +21,6 @@ connectDB();
 
 const app = express();
 
-// הגדרות CORS מתקדמות
 app.use(
   cors({
     origin: ["http://localhost:5173", "https://yourfrontenddomain.com"],
@@ -41,13 +40,12 @@ app.use(
 app.use(morgan("dev"));
 app.use(compression());
 
-// הגדרת Swagger UI להצגת התיעוד
+// Configuring Swagger UI to display documentation
 app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-// Middleware להגבלת בקשות
+// Middleware for request limiting
 app.use("/api/", apiLimiter);
 
-// נתיבים
 app.use("/api/comments", commentRoutes);
 app.use("/api/users", userRoutes);
 app.use("/uploads", express.static("uploads"));
@@ -61,7 +59,6 @@ app.get("/", (req, res) => {
   res.send("API is running...");
 });
 
-// הפעלת השרת תתבצע רק כאשר הקובץ מופעל ישירות
 if (require.main === module) {
   const PORT = process.env.PORT || 3000;
   app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

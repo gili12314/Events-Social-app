@@ -1,4 +1,3 @@
-// src/controllers/commentController.ts
 import { Request, Response } from "express";
 import mongoose from "mongoose";
 import Comment, { IComment } from "../models/Comment";
@@ -46,7 +45,6 @@ export const createComment = async (req: Request, res: Response): Promise<void> 
     const eventId = req.params.eventId;
     const userId = (req as AuthRequest).user;
 
-    // בדוק אם האירוע קיים
     const event = await Event.findById(eventId);
     if (!event) {
       res.status(404).json({ message: "Event not found" });

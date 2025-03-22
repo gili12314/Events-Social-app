@@ -1,4 +1,3 @@
-// src/routes/authRoutes.ts
 import express from "express";
 import { registerUser, loginUser, getUserProfile } from "../controllers/authController";
 import { protect } from "../middleware/auth";
@@ -6,7 +5,6 @@ import passport from "passport";
 
 const router = express.Router();
 
-// הרשמה והתחברות – הלוגיקה מתועדת בקונטרולרים
 router.post("/register", registerUser);
 router.post("/login", loginUser);
 router.get("/profile", protect, getUserProfile);

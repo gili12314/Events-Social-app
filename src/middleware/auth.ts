@@ -8,14 +8,12 @@ export interface AuthRequest extends Request {
   user: string;
 }
 
-// יצירת JWT Token
 export const generateToken = (userId: string) => {
   return jwt.sign({ id: userId }, process.env.JWT_SECRET as string, {
     expiresIn: "7d",
   });
 };
 
-// Middleware לאימות משתמשים
 export const protect = (req: Request, res: Response, next: NextFunction): void => {
   const token = req.header("Authorization")?.replace("Bearer ", "");
 
@@ -26,7 +24,7 @@ export const protect = (req: Request, res: Response, next: NextFunction): void =
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as { id: string };
-    (req as AuthRequest).user = decoded.id; // הבטחת שהמשתמש הוא `string`
+    (req as AuthRequest).user = decoded.id; 
     next();
   } catch (error) {
     res.status(401).json({ message: "Unauthorized, invalid token" });

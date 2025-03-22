@@ -1,4 +1,3 @@
-// src/controllers/authController.ts
 import { Request, Response } from "express";
 import User from "../models/User";
 import { generateToken } from "../middleware/auth";
@@ -177,7 +176,7 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
  */
 export const getUserProfile = async (req: Request, res: Response): Promise<void> => {
   try {
-    const userId = (req as AuthRequest).user; // המרת req ל-AuthRequest
+    const userId = (req as AuthRequest).user; 
 
     if (!userId) {
       res.status(401).json({ message: "Not authorized, no user found" });

@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import Joi from "joi";
 
-// דוגמה לסכמה עבור יצירת אירוע
 const eventSchema = Joi.object({
   title: Joi.string().min(3).max(50).required(),
   description: Joi.string().min(10).max(500).required(),

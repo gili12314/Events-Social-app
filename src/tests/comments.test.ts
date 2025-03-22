@@ -5,11 +5,9 @@ describe("Comments Endpoints", () => {
   let token: string;
   let eventId: string;
   let commentId: string;
-  // שימוש באימייל ייחודי למניעת התנגשויות
   const uniqueEmail = `commenttest_${Date.now()}@example.com`;
 
   beforeAll(async () => {
-    // רישום והתחברות למשתמש עבור בדיקות תגובות
     const resRegister = await request(app)
       .post("/api/auth/register")
       .send({
@@ -28,7 +26,6 @@ describe("Comments Endpoints", () => {
     expect(resLogin.statusCode).toEqual(200);
     token = resLogin.body.token;
 
-    // יצירת אירוע לבדיקה
     const resEvent = await request(app)
       .post("/api/events")
       .set("Authorization", `Bearer ${token}`)
@@ -43,7 +40,6 @@ describe("Comments Endpoints", () => {
   });
 
   afterAll(async () => {
-    // ניקוי: מחיקת האירוע שנוצר
     await request(app)
       .delete(`/api/events/${eventId}`)
       .set("Authorization", `Bearer ${token}`);
@@ -105,7 +101,6 @@ describe("Comments Endpoints", () => {
     });
 
     it("should fail to update a comment with an invalid token", async () => {
-      // יצירת תגובה חדשה
       const resCreate = await request(app)
         .post(`/api/comments/${eventId}`)
         .set("Authorization", `Bearer ${token}`)
@@ -113,7 +108,6 @@ describe("Comments Endpoints", () => {
       expect(resCreate.statusCode).toEqual(201);
       const tempCommentId = resCreate.body._id;
 
-      // ניסיון לעדכן עם טוקן לא תקין
       const resUpdate = await request(app)
         .put(`/api/comments/update/${tempCommentId}`)
         .set("Authorization", `Bearer invalidtoken`)
@@ -122,7 +116,6 @@ describe("Comments Endpoints", () => {
     });
 
     it("should fail to delete a comment with an invalid token", async () => {
-      // יצירת תגובה חדשה
       const resCreate = await request(app)
         .post(`/api/comments/${eventId}`)
         .set("Authorization", `Bearer ${token}`)
@@ -130,7 +123,6 @@ describe("Comments Endpoints", () => {
       expect(resCreate.statusCode).toEqual(201);
       const tempCommentId = resCreate.body._id;
 
-      // ניסיון למחוק עם טוקן לא תקין
       const resDelete = await request(app)
         .delete(`/api/comments/delete/${tempCommentId}`)
         .set("Authorization", `Bearer invalidtoken`);
