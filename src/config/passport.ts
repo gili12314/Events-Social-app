@@ -18,10 +18,14 @@ passport.use(
         let user = await User.findOne({ email: profile.emails?.[0].value });
 
         if (!user) {
+          const usernameFallback =
+            profile.displayName ||
+            (profile.emails && profile.emails[0].value.split("@")[0]) ||
+            "GoogleUser";
           user = new User({
-            username: profile.displayName,
+            username: usernameFallback,
             email: profile.emails?.[0].value,
-            profileImage: profile.photos?.[0].value
+            profileImage: (profile.photos && profile.photos.length > 0) ? profile.photos[0].value : ""
           });
           await user.save();
         }
@@ -41,7 +45,7 @@ passport.serializeUser((user, done) => {
 passport.deserializeUser(async (id, done) => {
   try {
     const user = await User.findById(id);
-    done(null, user || undefined); // ✅ הוספת undefined במקום null
+    done(null, user || undefined);
   } catch (error) {
     done(error, undefined);
   }

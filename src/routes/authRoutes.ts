@@ -2,6 +2,7 @@ import express from "express";
 import { registerUser, loginUser, getUserProfile } from "../controllers/authController";
 import { protect } from "../middleware/auth";
 import passport from "passport";
+import { generateToken } from "../middleware/auth";
 
 const router = express.Router();
 
@@ -26,30 +27,23 @@ router.get("/google", passport.authenticate("google", { scope: ["profile", "emai
  * /auth/google/callback:
  *   get:
  *     summary: "Google OAuth2 callback"
- *     description: "Handles the callback after Google authentication. On success, returns a JSON message with the authenticated user information. On failure, redirects to /login."
+ *     description: "Handles the callback after Google authentication. On success, redirects to the frontend callback page with token and userId as query parameters. On failure, redirects to /login."
  *     responses:
- *       200:
- *         description: "Login successful"
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Login successful"
- *                 user:
- *                   type: object
- *                   description: "Authenticated user object"
  *       302:
- *         description: "Redirects on failure"
+ *         description: "Redirects on success or failure"
  */
 router.get(
   "/google/callback",
   passport.authenticate("google", { failureRedirect: "/login" }),
   (req, res) => {
-    res.json({ message: "Login successful", user: req.user });
+    if (!req.user) {
+      return res.redirect("/login");
+    }
+    const user = req.user as { _id: string };
+    const token = generateToken(user._id.toString());
+    res.redirect(`http://localhost:5173/google-callback?token=${token}&userId=${user._id}`);
   }
 );
 
 export default router;
+  
