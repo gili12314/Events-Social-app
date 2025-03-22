@@ -55,6 +55,11 @@ export const registerUser = async (req: Request, res: Response): Promise<void> =
   try {
     const { username, email, password } = req.body;
 
+    if (!password) {
+      res.status(400).json({ message: "Password is required" });
+      return;
+    }
+
     const userExists = await User.findOne({ email });
     if (userExists) {
       res.status(400).json({ message: "User already exists" });
