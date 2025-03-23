@@ -55,9 +55,6 @@ app.use(passport.initialize());
 app.use(passport.session());
 app.use("/api/auth", authRoutes);
 
-app.get("/", (req, res) => {
-  res.send("API is running...");
-});
 
 if (require.main === module) {
   const PORT = process.env.PORT || 3000;

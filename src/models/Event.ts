@@ -6,6 +6,7 @@ export interface IEvent extends Document {
   image?: string;
   date: Date;
   location: string;
+  comments: mongoose.Types.ObjectId[];
   createdBy: mongoose.Types.ObjectId;
   participants: mongoose.Types.ObjectId[];
   likes: mongoose.Types.ObjectId[];
@@ -15,6 +16,7 @@ const EventSchema: Schema = new Schema({
   title: { type: String, required: true },
   description: { type: String, required: true },
   image: { type: String },
+  comments: [{ type: mongoose.Schema.Types.ObjectId, ref: "Comment" }],
   date: { type: Date, required: true },
   location: { type: String, required: true },
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },

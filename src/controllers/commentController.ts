@@ -56,6 +56,7 @@ export const createComment = async (req: Request, res: Response): Promise<void> 
       user: new mongoose.Types.ObjectId(userId),
       text,
     });
+    await Event.findByIdAndUpdate(eventId, { $push: { comments: comment._id } });
 
     await comment.save();
     res.status(201).json(comment);
@@ -206,6 +207,7 @@ export const deleteComment = async (req: Request, res: Response): Promise<void> 
       res.status(403).json({ message: "Unauthorized to delete this comment" });
       return;
     }
+    await Event.findByIdAndUpdate(comment.event, { $pull: { comments: comment._id } });
     await comment.deleteOne();
     res.json({ message: "Comment deleted successfully" });
   } catch (error) {

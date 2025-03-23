@@ -183,7 +183,7 @@ export const getUserProfile = async (req: Request, res: Response): Promise<void>
       return;
     }
 
-    const user = await User.findById(userId).select("-password");
+    const user = await User.findById(userId).select("-password").populate("events");
 
     if (!user) {
       res.status(404).json({ message: "User not found" });

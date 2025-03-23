@@ -127,7 +127,7 @@ export const updateUserProfile = async (req: Request, res: Response): Promise<vo
     if (email) user.email = email;
 
     await user.save();
-    res.json({ message: "Profile updated successfully", user });
+    res.json({ message: "Profile updated successfully", user:await user.populate("events") });
   } catch (error) {
     res.status(500).json({ message: "Error updating profile", error });
   }

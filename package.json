@@ -3,7 +3,10 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
- "scripts": {
+  "scripts": {
+  "start": "ts-node ./src/server.ts",
+  "build": "tsc",
+  "prod": "node ./dist/server.js",
   "test": "jest --runInBand --coverage"
 },
   "repository": {

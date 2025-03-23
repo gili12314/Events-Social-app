@@ -6,7 +6,13 @@ import Notification from "../models/Notification";
 import fs from "fs";
 import path from "path";
 import { getEventImprovementSuggestions } from "../services/openaiService";
+import User from "../models/User";
 
+
+
+const populatedEvent = async (event: any) => {
+  return await event.populate("createdBy").populate("participants").populate("comments")
+}
 /**
  * @swagger
  * /events:
@@ -75,8 +81,10 @@ export const createEvent = async (req: Request, res: Response): Promise<void> =>
       createdBy: userId,
     });
 
+    await User.findByIdAndUpdate(userId, { $push: { events: event._id } });
+
     await event.save();
-    res.status(201).json(event);
+    res.status(201).json(await populatedEvent(event));
   } catch (error) {
     res.status(500).json({ message: "Error creating event", error });
   }
@@ -158,7 +166,7 @@ export const updateEvent = async (req: Request, res: Response): Promise<void> =>
     if (location) event.location = location;
 
     await event.save();
-    res.json({ message: "Event updated successfully", event });
+    res.json({ message: "Event updated successfully", event: await populatedEvent(event) });
   } catch (error) {
     res.status(500).json({ message: "Error updating event", error });
   }
@@ -211,6 +219,8 @@ export const deleteEvent = async (req: Request, res: Response): Promise<void> =>
       return;
     }
 
+
+    await User.findByIdAndUpdate(userId, { $pull: { events: event._id } });
     await event.deleteOne();
     res.json({ message: "Event deleted successfully" });
   } catch (error) {
@@ -238,7 +248,7 @@ export const deleteEvent = async (req: Request, res: Response): Promise<void> =>
  */
 export const getAllEvents = async (_req: Request, res: Response): Promise<void> => {
   try {
-    const events = await Event.find().populate("createdBy", "username");
+    const events = await populatedEvent(Event.find())
     res.json(events);
   } catch (error) {
     res.status(500).json({ message: "Error fetching events", error });
@@ -302,7 +312,7 @@ export const joinEvent = async (req: Request, res: Response): Promise<void> => {
       }
     }
 
-    res.json({ message: "Successfully joined the event", event });
+    res.json({ message: "Successfully joined the event", event: await populatedEvent(event) });
   } catch (error) {
     res.status(500).json({ message: "Error joining event", error });
   }
@@ -352,7 +362,7 @@ export const leaveEvent = async (req: Request, res: Response): Promise<void> => 
 
     event.participants = event.participants.filter((id) => !id.equals(userId));
     await event.save();
-    res.json({ message: "Successfully left the event", event });
+    res.json({ message: "Successfully left the event", event: await populatedEvent(event) });
   } catch (error) {
     res.status(500).json({ message: "Error leaving event", error });
   }
@@ -409,7 +419,7 @@ export const likeEvent = async (req: Request, res: Response): Promise<void> => {
     }
 
     await event.save();
-    res.json({ message, event });
+    res.json({ message, event: await populatedEvent(event) });
   } catch (error) {
     res.status(500).json({ message: "Error liking event", error });
   }
@@ -524,12 +534,12 @@ export const uploadEventImage = async (req: Request, res: Response): Promise<voi
  */
 export const getEventById = async (req: Request, res: Response): Promise<void> => {
   try {
-    const event = await Event.findById(req.params.id);
+    const event = await Event.findById(req.params.id).populate("comments");
     if (!event) {
       res.status(404).json({ message: "Event not found" });
       return;
     }
-    res.json(event);
+    res.json(await populatedEvent(event));
   } catch (error) {
     res.status(500).json({ message: "Error fetching event", error });
   }

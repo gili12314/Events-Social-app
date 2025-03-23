@@ -6,6 +6,7 @@ export interface IUser extends Document {
   email: string;
   password?: string; 
   profileImage?: string;
+  events: mongoose.Types.ObjectId[];
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
@@ -13,6 +14,7 @@ const UserSchema: Schema<IUser> = new Schema({
   username: { type: String, required: true, unique: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: false }, 
+  events: [{ type: mongoose.Schema.Types.ObjectId, ref: "Event" }],
   profileImage: { type: String },
 });
 
