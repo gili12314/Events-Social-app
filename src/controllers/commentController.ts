@@ -58,6 +58,7 @@ export const createComment = async (req: Request, res: Response): Promise<void> 
     });
 
     await comment.save();
+    await comment.populate("user", "username");
     res.status(201).json(comment);
   } catch (error) {
     res.status(500).json({ message: "Error creating comment", error });

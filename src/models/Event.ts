@@ -6,7 +6,7 @@ export interface IEvent extends Document {
   image?: string;
   date: Date;
   location: string;
-  createdBy: mongoose.Types.ObjectId;
+  createdBy: mongoose.Types.ObjectId | { _id: string; username: string };
   participants: mongoose.Types.ObjectId[];
   likes: mongoose.Types.ObjectId[];
 }
