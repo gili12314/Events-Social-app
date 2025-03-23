@@ -6,12 +6,21 @@ import path from "path";
 
 /**
  * @swagger
- * /users/profile-picture:
- *   put:
- *     summary: "Upload profile picture"
- *     description: "Uploads a new profile picture for the authenticated user, replacing the old one if it exists."
+ * tags:
+ *   name: Users
+ *   description: Endpoints for user management
+ */
+
+/**
+ * @swagger
+ * /user/uploadProfilePicture:
+ *   post:
+ *     summary: Upload a profile picture for the authenticated user
+ *     tags: [Users]
  *     security:
  *       - bearerAuth: []
+ *     consumes:
+ *       - multipart/form-data
  *     requestBody:
  *       required: true
  *       content:
@@ -19,54 +28,40 @@ import path from "path";
  *           schema:
  *             type: object
  *             properties:
- *               image:
+ *               file:
  *                 type: string
  *                 format: binary
  *     responses:
  *       200:
- *         description: "Profile picture updated successfully"
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                 profileImage:
- *                   type: string
+ *         description: Profile picture updated successfully.
  *       400:
- *         description: "No file uploaded"
+ *         description: No file uploaded.
  *       404:
- *         description: "User not found"
+ *         description: User not found.
  *       500:
- *         description: "Error uploading profile picture"
+ *         description: Error uploading profile picture.
  */
 export const uploadProfilePicture = async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = (req as AuthRequest).user;
     const user = await User.findById(userId);
-
     if (!user) {
       res.status(404).json({ message: "User not found" });
       return;
     }
-
     if (!req.file) {
       res.status(400).json({ message: "No file uploaded" });
       return;
     }
-
-    // delete old photo if exists
+    // Delete old photo if exists
     if (user.profileImage) {
       const oldImagePath = path.join(__dirname, "..", user.profileImage);
       if (fs.existsSync(oldImagePath)) {
         fs.unlinkSync(oldImagePath);
       }
     }
-
     user.profileImage = `/uploads/${req.file.filename}`;
     await user.save();
-
     res.json({ message: "Profile picture updated", profileImage: user.profileImage });
   } catch (error) {
     res.status(500).json({ message: "Error uploading profile picture", error });
@@ -75,14 +70,13 @@ export const uploadProfilePicture = async (req: Request, res: Response): Promise
 
 /**
  * @swagger
- * /users/update:
+ * /user/updateProfile:
  *   put:
- *     summary: "Update user profile"
- *     description: "Updates the user's profile information such as username and email."
+ *     summary: Update the profile of the authenticated user
+ *     tags: [Users]
  *     security:
  *       - bearerAuth: []
  *     requestBody:
- *       description: "User profile data to update"
  *       required: true
  *       content:
  *         application/json:
@@ -91,41 +85,27 @@ export const uploadProfilePicture = async (req: Request, res: Response): Promise
  *             properties:
  *               username:
  *                 type: string
- *                 example: "newUsername"
  *               email:
  *                 type: string
- *                 example: "newemail@example.com"
  *     responses:
  *       200:
- *         description: "Profile updated successfully"
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                 user:
- *                   $ref: '#/components/schemas/User'
+ *         description: Profile updated successfully.
  *       404:
- *         description: "User not found"
+ *         description: User not found.
  *       500:
- *         description: "Error updating profile"
+ *         description: Error updating profile.
  */
 export const updateUserProfile = async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = (req as AuthRequest).user;
     const { username, email } = req.body;
-
     const user = await User.findById(userId);
     if (!user) {
       res.status(404).json({ message: "User not found" });
       return;
     }
-
     if (username) user.username = username;
     if (email) user.email = email;
-
     await user.save();
     res.json({ message: "Profile updated successfully", user });
   } catch (error) {
