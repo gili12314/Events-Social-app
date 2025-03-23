@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import Event from "../models/Event";
-import { AuthRequest } from "../middleware/auth";  
+import { AuthRequest } from "../middleware/auth";
 import mongoose from "mongoose";
 import Notification from "../models/Notification";
 import fs from "fs";
@@ -434,7 +434,7 @@ export const uploadEventImage = async (req: Request, res: Response): Promise<voi
  */
 export const getEventById = async (req: Request, res: Response): Promise<void> => {
   try {
-    const event = await Event.findById(req.params.id);
+    const event = await Event.findById(req.params.id).populate("createdBy", "username");
     if (!event) {
       res.status(404).json({ message: "Event not found" });
       return;
@@ -479,3 +479,4 @@ export const improveEvent = async (req: Request, res: Response): Promise<void> =
     res.status(500).json({ message: "Error improving event", error });
   }
 };
+ 
