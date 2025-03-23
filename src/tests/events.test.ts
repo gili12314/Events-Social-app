@@ -1,5 +1,6 @@
 import request from "supertest";
 import app from "../server";
+import mongoose from "mongoose";
 
 describe("Events Endpoints", () => {
   let token: string;
