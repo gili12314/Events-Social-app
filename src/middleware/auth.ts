@@ -14,17 +14,23 @@ export const generateToken = (userId: string) => {
   });
 };
 
-export const protect = (req: Request, res: Response, next: NextFunction): void => {
+export const protect = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void => {
   const token = req.header("Authorization")?.replace("Bearer ", "");
-
+  console.log(token);
   if (!token) {
     res.status(401).json({ message: "Unauthorized, no token" });
     return;
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as { id: string };
-    (req as AuthRequest).user = decoded.id; 
+    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as {
+      id: string;
+    };
+    (req as AuthRequest).user = decoded.id;
     next();
   } catch (error) {
     res.status(401).json({ message: "Unauthorized, invalid token" });

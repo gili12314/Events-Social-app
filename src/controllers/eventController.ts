@@ -8,11 +8,10 @@ import path from "path";
 import { getEventImprovementSuggestions } from "../services/openaiService";
 import User from "../models/User";
 
-
-
 const populatedEvent = async (event: any) => {
-  return await event.populate("createdBy").populate("participants").populate("comments")
-}
+  return await event
+    .populate("createdBy participants comments");
+};
 /**
  * @swagger
  * /events:
@@ -62,7 +61,10 @@ const populatedEvent = async (event: any) => {
  *       500:
  *         description: "Error creating event"
  */
-export const createEvent = async (req: Request, res: Response): Promise<void> => {
+export const createEvent = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const { title, description, image, date, location } = req.body;
     const userId = (req as AuthRequest).user;
@@ -143,7 +145,10 @@ export const createEvent = async (req: Request, res: Response): Promise<void> =>
  *       500:
  *         description: "Error updating event"
  */
-export const updateEvent = async (req: Request, res: Response): Promise<void> => {
+export const updateEvent = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const userId = (req as AuthRequest).user;
     const event = await Event.findById(req.params.id);
@@ -166,7 +171,10 @@ export const updateEvent = async (req: Request, res: Response): Promise<void> =>
     if (location) event.location = location;
 
     await event.save();
-    res.json({ message: "Event updated successfully", event: await populatedEvent(event) });
+    res.json({
+      message: "Event updated successfully",
+      event: await populatedEvent(event),
+    });
   } catch (error) {
     res.status(500).json({ message: "Error updating event", error });
   }
@@ -204,7 +212,10 @@ export const updateEvent = async (req: Request, res: Response): Promise<void> =>
  *       500:
  *         description: "Error deleting event"
  */
-export const deleteEvent = async (req: Request, res: Response): Promise<void> => {
+export const deleteEvent = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const userId = (req as AuthRequest).user;
     const event = await Event.findById(req.params.id);
@@ -218,7 +229,6 @@ export const deleteEvent = async (req: Request, res: Response): Promise<void> =>
       res.status(403).json({ message: "Unauthorized to delete this event" });
       return;
     }
-
 
     await User.findByIdAndUpdate(userId, { $pull: { events: event._id } });
     await event.deleteOne();
@@ -246,9 +256,12 @@ export const deleteEvent = async (req: Request, res: Response): Promise<void> =>
  *       500:
  *         description: "Error fetching events"
  */
-export const getAllEvents = async (_req: Request, res: Response): Promise<void> => {
+export const getAllEvents = async (
+  _req: Request,
+  res: Response
+): Promise<void> => {
   try {
-    const events = await populatedEvent(Event.find())
+    const events = await populatedEvent(Event.find());
     res.json(events);
   } catch (error) {
     res.status(500).json({ message: "Error fetching events", error });
@@ -312,7 +325,10 @@ export const joinEvent = async (req: Request, res: Response): Promise<void> => {
       }
     }
 
-    res.json({ message: "Successfully joined the event", event: await populatedEvent(event) });
+    res.json({
+      message: "Successfully joined the event",
+      event: await populatedEvent(event),
+    });
   } catch (error) {
     res.status(500).json({ message: "Error joining event", error });
   }
@@ -350,7 +366,10 @@ export const joinEvent = async (req: Request, res: Response): Promise<void> => {
  *       500:
  *         description: "Error leaving event"
  */
-export const leaveEvent = async (req: Request, res: Response): Promise<void> => {
+export const leaveEvent = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const userId = new mongoose.Types.ObjectId((req as AuthRequest).user);
     const event = await Event.findById(req.params.id);
@@ -362,7 +381,10 @@ export const leaveEvent = async (req: Request, res: Response): Promise<void> => 
 
     event.participants = event.participants.filter((id) => !id.equals(userId));
     await event.save();
-    res.json({ message: "Successfully left the event", event: await populatedEvent(event) });
+    res.json({
+      message: "Successfully left the event",
+      event: await populatedEvent(event),
+    });
   } catch (error) {
     res.status(500).json({ message: "Error leaving event", error });
   }
@@ -471,7 +493,10 @@ export const likeEvent = async (req: Request, res: Response): Promise<void> => {
  *       500:
  *         description: "Error uploading event image"
  */
-export const uploadEventImage = async (req: Request, res: Response): Promise<void> => {
+export const uploadEventImage = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const userId = (req as AuthRequest).user;
     const event = await Event.findById(req.params.id);
@@ -532,16 +557,26 @@ export const uploadEventImage = async (req: Request, res: Response): Promise<voi
  *       500:
  *         description: "Error fetching event"
  */
-export const getEventById = async (req: Request, res: Response): Promise<void> => {
+export const getEventById = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const event = await Event.findById(req.params.id).populate("comments");
+    console.log(event);
     if (!event) {
       res.status(404).json({ message: "Event not found" });
       return;
     }
     res.json(await populatedEvent(event));
   } catch (error) {
-    res.status(500).json({ message: "Error fetching event", error });
+    console.log(error);
+    res
+      .status(500)
+      .json({
+        message: "Error fetching event",
+        error: (error as Error)?.message,
+      });
   }
 };
 
@@ -575,7 +610,10 @@ export const getEventById = async (req: Request, res: Response): Promise<void> =
  *       500:
  *         description: "Error improving event"
  */
-export const improveEvent = async (req: Request, res: Response): Promise<void> => {
+export const improveEvent = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const event = await Event.findById(req.params.id);
 
@@ -584,7 +622,11 @@ export const improveEvent = async (req: Request, res: Response): Promise<void> =
       return;
     }
 
-    const suggestions = await getEventImprovementSuggestions(event.title, event.description, event.participants.length);
+    const suggestions = await getEventImprovementSuggestions(
+      event.title,
+      event.description,
+      event.participants.length
+    );
 
     res.json({ message: "Event improvement suggestions", suggestions });
   } catch (error) {

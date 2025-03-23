@@ -1,6 +1,5 @@
 import request from "supertest";
 import app from "../server";
-import mongoose from "mongoose";
 
 describe("Comments Endpoints", () => {
   let token: string;
@@ -9,7 +8,6 @@ describe("Comments Endpoints", () => {
   const uniqueEmail = `commenttest_${Date.now()}@example.com`;
 
   beforeAll(async () => {
-    // רישום והתחברות למשתמש
     const resRegister = await request(app)
       .post("/api/auth/register")
       .send({
@@ -28,7 +26,7 @@ describe("Comments Endpoints", () => {
     expect(resLogin.statusCode).toEqual(200);
     token = resLogin.body.token;
 
-    // יצירת event לבדיקות – שימוש בנתיב createEvent
+    // יצירת אירוע עבור ה־comments
     const resEvent = await request(app)
       .post("/api/events")
       .set("Authorization", `Bearer ${token}`)
@@ -43,36 +41,48 @@ describe("Comments Endpoints", () => {
   });
 
   afterAll(async () => {
+    // מחיקת האירוע שנוצר
     await request(app)
       .delete(`/api/events/${eventId}`)
       .set("Authorization", `Bearer ${token}`);
-    // סגירת חיבור למסד במידת הצורך
-    await mongoose.connection.close();
   });
 
   describe("Success scenarios", () => {
     it("should create a new comment", async () => {
       const res = await request(app)
-        .post(`/api/events/${eventId}/comments`)
+        .post(`/api/comments/${eventId}`)
         .set("Authorization", `Bearer ${token}`)
         .send({ text: "This is a test comment." });
       expect(res.statusCode).toEqual(201);
-      expect(res.body).toHaveProperty("_id");
+      // בודקים שהתגובות מוחזרות עם השדות הרלוונטיים, כולל populated של ה-user עם username
+      expect(res.body).toMatchObject({
+        text: "This is a test comment.",
+        event: eventId,
+        user: expect.any(String),
+      });
       commentId = res.body._id;
     });
 
     it("should get comments for the event", async () => {
       const res = await request(app)
-        .get(`/api/events/${eventId}/comments`)
+        .get(`/api/comments/${eventId}`)
         .set("Authorization", `Bearer ${token}`);
       expect(res.statusCode).toEqual(200);
       expect(Array.isArray(res.body)).toBeTruthy();
       expect(res.body.length).toBeGreaterThan(0);
+      // בודקים שהתגובה מכילה גם את השדה populated של user (עם username)
+      expect(res.body[0]).toEqual(
+        expect.objectContaining({
+          _id: expect.any(String),
+          text: expect.any(String),
+          user: expect.objectContaining({ username: expect.any(String) }),
+        })
+      );
     });
 
     it("should update the comment", async () => {
       const res = await request(app)
-        .put(`/api/comments/${commentId}`)
+        .put(`/api/comments/update/${commentId}`)
         .set("Authorization", `Bearer ${token}`)
         .send({ text: "Updated comment text." });
       expect(res.statusCode).toEqual(200);
@@ -81,7 +91,7 @@ describe("Comments Endpoints", () => {
 
     it("should delete the comment", async () => {
       const res = await request(app)
-        .delete(`/api/comments/${commentId}`)
+        .delete(`/api/comments/delete/${commentId}`)
         .set("Authorization", `Bearer ${token}`);
       expect(res.statusCode).toEqual(200);
       expect(res.body).toHaveProperty("message", "Comment deleted successfully");
@@ -91,15 +101,15 @@ describe("Comments Endpoints", () => {
   describe("Failure and edge cases", () => {
     it("should fail to create a comment without authorization header", async () => {
       const res = await request(app)
-        .post(`/api/events/${eventId}/comments`)
+        .post(`/api/comments/${eventId}`)
         .send({ text: "Unauthorized comment" });
       expect(res.statusCode).toEqual(401);
     });
 
     it("should fail to create a comment for a non-existent event", async () => {
-      const nonExistentEventId = new mongoose.Types.ObjectId().toString();
+      const nonExistentEventId = "60d9f9f9f9f9f9f9f9f9f9f9";
       const res = await request(app)
-        .post(`/api/events/${nonExistentEventId}/comments`)
+        .post(`/api/comments/${nonExistentEventId}`)
         .set("Authorization", `Bearer ${token}`)
         .send({ text: "Comment for non-existent event" });
       expect(res.statusCode).toEqual(404);
@@ -107,31 +117,31 @@ describe("Comments Endpoints", () => {
 
     it("should fail to update a comment with an invalid token", async () => {
       const resCreate = await request(app)
-        .post(`/api/events/${eventId}/comments`)
+        .post(`/api/comments/${eventId}`)
         .set("Authorization", `Bearer ${token}`)
         .send({ text: "Comment to update with wrong user" });
       expect(resCreate.statusCode).toEqual(201);
       const tempCommentId = resCreate.body._id;
 
       const resUpdate = await request(app)
-        .put(`/api/comments/${tempCommentId}`)
+        .put(`/api/comments/update/${tempCommentId}`)
         .set("Authorization", `Bearer invalidtoken`)
         .send({ text: "Attempted update" });
-      expect(resUpdate.statusCode).toEqual(401);
+      expect(resUpdate.statusCode).toEqual(403);
     });
 
     it("should fail to delete a comment with an invalid token", async () => {
       const resCreate = await request(app)
-        .post(`/api/events/${eventId}/comments`)
+        .post(`/api/comments/${eventId}`)
         .set("Authorization", `Bearer ${token}`)
         .send({ text: "Comment to delete with wrong user" });
       expect(resCreate.statusCode).toEqual(201);
       const tempCommentId = resCreate.body._id;
 
       const resDelete = await request(app)
-        .delete(`/api/comments/${tempCommentId}`)
+        .delete(`/api/comments/delete/${tempCommentId}`)
         .set("Authorization", `Bearer invalidtoken`);
-      expect(resDelete.statusCode).toEqual(401);
+      expect(resDelete.statusCode).toEqual(403);
     });
   });
 });

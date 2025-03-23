@@ -1,6 +1,5 @@
 import request from "supertest";
 import app from "../server";
-import mongoose from "mongoose";
 
 describe("Events Endpoints", () => {
   let token: string;
@@ -39,8 +38,17 @@ describe("Events Endpoints", () => {
         .post("/api/events")
         .set("Authorization", `Bearer ${token}`)
         .send(eventData);
+
       expect(res.statusCode).toEqual(201);
-      expect(res.body).toHaveProperty("_id");
+      expect(res.body).toMatchObject({
+        title: eventData.title,
+        description: eventData.description,
+        location: eventData.location,
+        participants: [],
+        comments: [],
+        likes: [],
+        createdBy: expect.objectContaining({ username: expect.any(String) }),
+      });
       eventId = res.body._id;
     });
 
@@ -49,31 +57,45 @@ describe("Events Endpoints", () => {
         .put(`/api/events/${eventId}`)
         .set("Authorization", `Bearer ${token}`)
         .send({ title: "Updated Test Event" });
+
       expect(res.statusCode).toEqual(200);
       expect(res.body).toHaveProperty("message", "Event updated successfully");
-      expect(res.body.event.title).toEqual("Updated Test Event");
+      expect(res.body.event).toMatchObject({
+        title: "Updated Test Event",
+        participants: [],
+        comments: [],
+        likes: [],
+        createdBy: expect.objectContaining({ username: expect.any(String) }),
+      });
     });
 
     it("should join the event", async () => {
       const res = await request(app)
         .post(`/api/events/${eventId}/join`)
         .set("Authorization", `Bearer ${token}`);
+
       expect(res.statusCode).toEqual(200);
       expect(res.body).toHaveProperty("message", "Successfully joined the event");
+      expect(Array.isArray(res.body.event.participants)).toBe(true);
+      expect(res.body.event.participants[0]).toMatchObject({ username: expect.any(String) });
     });
 
     it("should like the event", async () => {
       const res = await request(app)
         .post(`/api/events/${eventId}/like`)
         .set("Authorization", `Bearer ${token}`);
+
       expect(res.statusCode).toEqual(200);
       expect(res.body).toHaveProperty("message", "Like added");
+      expect(Array.isArray(res.body.event.likes)).toBe(true);
+      expect(res.body.event.likes[0]).toMatchObject({ username: expect.any(String) });
     });
 
     it("should delete the event", async () => {
       const res = await request(app)
         .delete(`/api/events/${eventId}`)
         .set("Authorization", `Bearer ${token}`);
+
       expect(res.statusCode).toEqual(200);
       expect(res.body).toHaveProperty("message", "Event deleted successfully");
     });
@@ -87,8 +109,9 @@ describe("Events Endpoints", () => {
       expect(res.statusCode).toEqual(401);
     });
 
+    const nonExistentEventId = "60d9f9f9f9f9f9f9f9f9f9f9";
+
     it("should return 404 when updating a non-existent event", async () => {
-      const nonExistentEventId = "60d9f9f9f9f9f9f9f9f9f9f9";
       const res = await request(app)
         .put(`/api/events/${nonExistentEventId}`)
         .set("Authorization", `Bearer ${token}`)
@@ -97,7 +120,6 @@ describe("Events Endpoints", () => {
     });
 
     it("should return 404 when joining a non-existent event", async () => {
-      const nonExistentEventId = "60d9f9f9f9f9f9f9f9f9f9f9";
       const res = await request(app)
         .post(`/api/events/${nonExistentEventId}/join`)
         .set("Authorization", `Bearer ${token}`);
@@ -105,7 +127,6 @@ describe("Events Endpoints", () => {
     });
 
     it("should return 404 when liking a non-existent event", async () => {
-      const nonExistentEventId = "60d9f9f9f9f9f9f9f9f9f9f9";
       const res = await request(app)
         .post(`/api/events/${nonExistentEventId}/like`)
         .set("Authorization", `Bearer ${token}`);
@@ -113,7 +134,6 @@ describe("Events Endpoints", () => {
     });
 
     it("should return 404 when deleting a non-existent event", async () => {
-      const nonExistentEventId = "60d9f9f9f9f9f9f9f9f9f9f9";
       const res = await request(app)
         .delete(`/api/events/${nonExistentEventId}`)
         .set("Authorization", `Bearer ${token}`);
