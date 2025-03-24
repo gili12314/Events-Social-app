@@ -5,7 +5,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 export interface AuthRequest extends Request {
-  user: string;
+  user: { _id: string; };
 }
 
 export const generateToken = (userId: string) => {
@@ -15,18 +15,21 @@ export const generateToken = (userId: string) => {
 };
 
 export const protect = (req: Request, res: Response, next: NextFunction): void => {
-  const token = req.header("Authorization")?.replace("Bearer ", "");
-
-  if (!token) {
-    res.status(401).json({ message: "Unauthorized, no token" });
-    return;
-  }
-
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as { id: string };
-    (req as AuthRequest).user = decoded.id; 
+    const token = req.headers.authorization?.split(" ")[1];
+    
+    if (!token) {
+      res.status(401).json({ message: "Not authorized, no token" });
+      return;
+    }
+
+    const decoded: any = jwt.verify(token, process.env.JWT_SECRET || "fallbacksecret");
+    
+    // Set user as object with _id property
+    (req as AuthRequest).user = { _id: decoded.id };
+    
     next();
   } catch (error) {
-    res.status(401).json({ message: "Unauthorized, invalid token" });
+    res.status(401).json({ message: "Not authorized, token failed" });
   }
 };

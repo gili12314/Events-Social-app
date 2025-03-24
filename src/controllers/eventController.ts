@@ -127,7 +127,7 @@ export const updateEvent = async (req: Request, res: Response): Promise<void> =>
       res.status(404).json({ message: "Event not found" });
       return;
     }
-    if (event.createdBy.toString() !== userId) {
+    if (event.createdBy.toString() !== userId._id.toString()) {
       res.status(403).json({ message: "Unauthorized to edit this event" });
       return;
     }
@@ -177,7 +177,7 @@ export const deleteEvent = async (req: Request, res: Response): Promise<void> =>
       res.status(404).json({ message: "Event not found" });
       return;
     }
-    if (event.createdBy.toString() !== userId) {
+    if (event.createdBy.toString() !== userId?._id.toString()) {
       res.status(403).json({ message: "Unauthorized to delete this event" });
       return;
     }
@@ -232,7 +232,7 @@ export const getMyEvents = async (req: Request, res: Response): Promise<void> =>
       res.status(401).json({ message: "Unauthorized" });
       return;
     }
-    const events = await Event.find({ createdBy: new mongoose.Types.ObjectId(userId) }).populate("createdBy", "username");
+    const events = await Event.find({ createdBy: new mongoose.Types.ObjectId(userId._id) }).populate("createdBy", "username");
     res.json(events);
   } catch (error) {
     res.status(500).json({ message: "Error fetching user's events", error });
@@ -265,7 +265,7 @@ export const getMyEvents = async (req: Request, res: Response): Promise<void> =>
  */
 export const joinEvent = async (req: Request, res: Response): Promise<void> => {
   try {
-    const userId = new mongoose.Types.ObjectId((req as AuthRequest).user);
+    const userId = new mongoose.Types.ObjectId((req as AuthRequest).user._id);
     const event = await Event.findById(req.params.id);
     if (!event) {
       res.status(404).json({ message: "Event not found" });
@@ -314,7 +314,7 @@ export const joinEvent = async (req: Request, res: Response): Promise<void> => {
  */
 export const leaveEvent = async (req: Request, res: Response): Promise<void> => {
   try {
-    const userId = new mongoose.Types.ObjectId((req as AuthRequest).user);
+    const userId = new mongoose.Types.ObjectId((req as AuthRequest).user._id);
     const event = await Event.findById(req.params.id);
     if (!event) {
       res.status(404).json({ message: "Event not found" });
@@ -353,7 +353,7 @@ export const leaveEvent = async (req: Request, res: Response): Promise<void> => 
  */
 export const likeEvent = async (req: Request, res: Response): Promise<void> => {
   try {
-    const userId = new mongoose.Types.ObjectId((req as AuthRequest).user);
+    const userId = new mongoose.Types.ObjectId((req as AuthRequest).user._id);
     const event = await Event.findById(req.params.id);
     if (!event) {
       res.status(404).json({ message: "Event not found" });
@@ -420,7 +420,7 @@ export const uploadEventImage = async (req: Request, res: Response): Promise<voi
       res.status(404).json({ message: "Event not found" });
       return;
     }
-    if (event.createdBy.toString() !== userId) {
+    if (event.createdBy.toString() !== userId._id.toString()) {
       res.status(403).json({ message: "Unauthorized to update this event" });
       return;
     }

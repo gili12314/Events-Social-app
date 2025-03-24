@@ -25,7 +25,7 @@ import mongoose from "mongoose";
  */
 export const getNotifications = async (req: Request, res: Response): Promise<void> => {
   try {
-    const userId = new mongoose.Types.ObjectId((req as AuthRequest).user);
+    const userId = new mongoose.Types.ObjectId((req as AuthRequest).user._id);
     const notifications = await Notification.find({ recipient: userId })
       .populate("sender", "username")
       .populate("event", "title")
@@ -61,7 +61,7 @@ export const getNotifications = async (req: Request, res: Response): Promise<voi
  */
 export const markNotificationsAsRead = async (req: Request, res: Response): Promise<void> => {
   try {
-    const userId = new mongoose.Types.ObjectId((req as AuthRequest).user);
+    const userId = new mongoose.Types.ObjectId((req as AuthRequest).user._id);
     await Notification.updateMany({ recipient: userId, isRead: false }, { isRead: true });
 
     res.json({ message: "Notifications marked as read" });

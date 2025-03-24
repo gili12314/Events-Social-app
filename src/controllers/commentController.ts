@@ -53,7 +53,7 @@ export const createComment = async (req: Request, res: Response): Promise<void> 
 
     const comment: IComment = new Comment({
       event: event._id,
-      user: new mongoose.Types.ObjectId(userId),
+      user: new mongoose.Types.ObjectId(userId._id),
       text,
     });
 
@@ -150,7 +150,7 @@ export const updateComment = async (req: Request, res: Response): Promise<void> 
       res.status(404).json({ message: "Comment not found" });
       return;
     }
-    if (comment.user.toString() !== userId) {
+    if (comment.user.toString() !== userId._id) {
       res.status(403).json({ message: "Unauthorized to update this comment" });
       return;
     }
@@ -203,7 +203,7 @@ export const deleteComment = async (req: Request, res: Response): Promise<void> 
       res.status(404).json({ message: "Comment not found" });
       return;
     }
-    if (comment.user.toString() !== userId) {
+    if (comment.user.toString() !== userId._id) {
       res.status(403).json({ message: "Unauthorized to delete this comment" });
       return;
     }
