@@ -211,6 +211,37 @@ export const getAllEvents = async (_req: Request, res: Response): Promise<void> 
 
 /**
  * @swagger
+ * /myevents:
+ *   get:
+ *     summary: Retrieve events created by the authenticated user
+ *     tags: [Events]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: List of events created by the user.
+ *       401:
+ *         description: Unauthorized.
+ *       500:
+ *         description: Error fetching user's events.
+ */
+export const getMyEvents = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = (req as AuthRequest).user;
+    if (!userId) {
+      res.status(401).json({ message: "Unauthorized" });
+      return;
+    }
+    const events = await Event.find({ createdBy: new mongoose.Types.ObjectId(userId) }).populate("createdBy", "username");
+    res.json(events);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching user's events", error });
+  }
+};
+
+
+/**
+ * @swagger
  * /event/{id}/join:
  *   post:
  *     summary: Join an event
@@ -479,4 +510,3 @@ export const improveEvent = async (req: Request, res: Response): Promise<void> =
     res.status(500).json({ message: "Error improving event", error });
   }
 };
- 
