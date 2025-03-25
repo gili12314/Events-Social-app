@@ -3,6 +3,55 @@ import User from "../models/User";
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from "../services/tokenService";
 import { AuthRequest } from "../middleware/auth";
 
+/**
+ * @swagger
+ * /auth/register:
+ *   post:
+ *     summary: "Register a new user"
+ *     description: "Creates a new user account with username, email, and password. Returns the created user data along with access and refresh tokens."
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - username
+ *               - email
+ *               - password
+ *             properties:
+ *               username:
+ *                 type: string
+ *                 example: "gili"
+ *               email:
+ *                 type: string
+ *                 example: "gil@salton.com"
+ *               password:
+ *                 type: string
+ *                 example: "password123"
+ *     responses:
+ *       201:
+ *         description: "User registered successfully"
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 _id:
+ *                   type: string
+ *                 username:
+ *                   type: string
+ *                 email:
+ *                   type: string
+ *                 token:
+ *                   type: string
+ *                 refreshToken:
+ *                   type: string
+ *       400:
+ *         description: "Password is required or User already exists"
+ *       500:
+ *         description: "Error registering user"
+ */
 export const registerUser = async (req: Request, res: Response): Promise<void> => {
   try {
     const { username, email, password } = req.body;
@@ -34,6 +83,51 @@ export const registerUser = async (req: Request, res: Response): Promise<void> =
   }
 };
 
+/**
+ * @swagger
+ * /auth/login:
+ *   post:
+ *     summary: "Login user"
+ *     description: "Authenticates a user using email and password and returns user data along with access and refresh tokens."
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 example: "gil@salton.com"
+ *               password:
+ *                 type: string
+ *                 example: "password123"
+ *     responses:
+ *       200:
+ *         description: "User logged in successfully"
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 _id:
+ *                   type: string
+ *                 username:
+ *                   type: string
+ *                 email:
+ *                   type: string
+ *                 token:
+ *                   type: string
+ *                 refreshToken:
+ *                   type: string
+ *       401:
+ *         description: "Invalid email or password"
+ *       500:
+ *         description: "Error logging in"
+ */
 export const loginUser = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password } = req.body;
@@ -58,7 +152,36 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
     res.status(500).json({ message: "Error logging in", error });
   }
 };
- 
+
+/**
+ * @swagger
+ * /auth/profile:
+ *   get:
+ *     summary: "Get user profile"
+ *     description: "Retrieves the profile of the authenticated user. Requires a valid access token."
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: "User profile retrieved successfully"
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 _id:
+ *                   type: string
+ *                 username:
+ *                   type: string
+ *                 email:
+ *                   type: string
+ *       401:
+ *         description: "Not authorized, no user found"
+ *       404:
+ *         description: "User not found"
+ *       500:
+ *         description: "Error retrieving user profile"
+ */
 export const getUserProfile = async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = (req as AuthRequest).user;
@@ -82,7 +205,7 @@ export const getUserProfile = async (req: Request, res: Response): Promise<void>
  * /auth/refresh:
  *   post:
  *     summary: "Refresh access token"
- *     description: "Generates a new access token using a valid refresh token."
+ *     description: "Generates a new access token using a valid refresh token. Requires the refresh token in the request body."
  *     requestBody:
  *       required: true
  *       content:
@@ -92,6 +215,7 @@ export const getUserProfile = async (req: Request, res: Response): Promise<void>
  *             properties:
  *               refreshToken:
  *                 type: string
+ *                 example: "your_refresh_token"
  *     responses:
  *       200:
  *         description: "New access token generated successfully"
