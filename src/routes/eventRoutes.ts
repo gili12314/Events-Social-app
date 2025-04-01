@@ -1,33 +1,31 @@
 import express from "express";
-import {
-  createEvent,
-  getAllEvents,
-  deleteEvent,
-  joinEvent,
-  leaveEvent,
-  likeEvent,
-  updateEvent,
-  uploadEventImage,
-  improveEvent,
-  getEventById,
-  getMyEvents
-} from "../controllers/eventController";
+import multer from "multer";
+import { createEvent, updateEvent, deleteEvent, getAllEvents, getMyEvents, joinEvent, leaveEvent, likeEvent, uploadEventImage, getEventById, improveEvent, uploadNewEventImage } from "../controllers/eventController";
 import { protect } from "../middleware/auth";
-import upload from "../middleware/upload";
-import { validateEvent } from "../middleware/validate";
 
 const router = express.Router();
 
-router.post("/", protect, validateEvent, createEvent);
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/");
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + "-" + file.originalname);
+  }
+});
+const upload = multer({ storage: storage });
+
+router.post("/", protect, createEvent);
+router.post("/upload", protect, upload.single("image"), uploadNewEventImage);
 router.put("/:id", protect, updateEvent);
+router.delete("/:id", protect, deleteEvent);
 router.get("/", getAllEvents);
 router.get("/my-events", protect, getMyEvents);
-router.get("/:id", protect, getEventById);
-router.delete("/:id", protect, deleteEvent);
 router.post("/:id/join", protect, joinEvent);
 router.post("/:id/leave", protect, leaveEvent);
 router.post("/:id/like", protect, likeEvent);
-router.put("/:id/image", protect, upload.single("image"), uploadEventImage);
-router.post("/:id/improve", protect, improveEvent);
+router.post("/:id/uploadImage", protect, upload.single("file"), uploadEventImage);
+router.get("/:id", getEventById);
+router.get("/:id/improve", improveEvent);
 
 export default router;

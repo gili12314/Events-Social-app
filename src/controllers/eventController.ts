@@ -16,6 +16,52 @@ import { getEventImprovementSuggestions } from "../services/openaiService";
 
 /**
  * @swagger
+ * /events/upload:
+ *   post:
+ *     summary: Upload an image for a new event
+ *     tags: [Events]
+ *     consumes:
+ *       - multipart/form-data
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               image:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         description: "Event image uploaded successfully."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 eventImage:
+ *                   type: string
+ *       400:
+ *         description: "No file uploaded."
+ *       500:
+ *         description: "Error uploading event image."
+ */
+export const uploadNewEventImage = async (req: Request, res: Response): Promise<void> => {
+  try {
+    if (!req.file) {
+      res.status(400).json({ message: "No file uploaded" });
+      return;
+    }
+    const eventImage = `/uploads/${req.file.filename}`;
+    res.json({ message: "Event image uploaded", eventImage });
+  } catch (error) {
+    res.status(500).json({ message: "Error uploading event image", error });
+  }
+};
+
+/**
+ * @swagger
  * /event:
  *   post:
  *     summary: Create a new event
@@ -55,11 +101,14 @@ import { getEventImprovementSuggestions } from "../services/openaiService";
  */
 export const createEvent = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { title, description, image, date, location } = req.body;
+    let { title, description, image, date, location } = req.body;
     const userId = (req as AuthRequest).user;
     if (!userId) {
       res.status(401).json({ message: "Unauthorized" });
       return;
+    }
+    if (image === "image") {
+      image = undefined;
     }
     const event = new Event({
       title,
@@ -238,7 +287,6 @@ export const getMyEvents = async (req: Request, res: Response): Promise<void> =>
     res.status(500).json({ message: "Error fetching user's events", error });
   }
 };
-
 
 /**
  * @swagger
@@ -466,7 +514,7 @@ export const uploadEventImage = async (req: Request, res: Response): Promise<voi
 export const getEventById = async (req: Request, res: Response): Promise<void> => {
   try {
     const event = await Event.findById(req.params.id).populate("createdBy", "username")
-    .populate("participants", "username");
+      .populate("participants", "username");
     if (!event) {
       res.status(404).json({ message: "Event not found" });
       return;
@@ -482,6 +530,7 @@ export const getEventById = async (req: Request, res: Response): Promise<void> =
  * /event/{id}/improve:
  *   get:
  *     summary: Get improvement suggestions for an event
+ *     description: "Generates improvement suggestions using an external service and saves the response to the event. Only the creator can see these suggestions."
  *     tags: [Events]
  *     parameters:
  *       - in: path
@@ -506,8 +555,10 @@ export const improveEvent = async (req: Request, res: Response): Promise<void> =
       return;
     }
     const suggestions = await getEventImprovementSuggestions(event.title, event.description, event.participants.length);
+    event.improvementResponse = suggestions;
+    await event.save();
     res.json({ message: "Event improvement suggestions", suggestions });
   } catch (error) {
     res.status(500).json({ message: "Error improving event", error });
   }
-};
+}; 

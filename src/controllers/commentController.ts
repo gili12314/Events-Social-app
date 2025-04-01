@@ -44,19 +44,16 @@ export const createComment = async (req: Request, res: Response): Promise<void> 
     const { text } = req.body;
     const eventId = req.params.eventId;
     const userId = (req as AuthRequest).user;
-
     const event = await Event.findById(eventId);
     if (!event) {
       res.status(404).json({ message: "Event not found" });
       return;
     }
-
     const comment: IComment = new Comment({
       event: event._id,
       user: new mongoose.Types.ObjectId(userId),
       text,
     });
-
     await comment.save();
     await comment.populate("user", "username");
     res.status(201).json(comment);
@@ -144,7 +141,6 @@ export const updateComment = async (req: Request, res: Response): Promise<void> 
     const commentId = req.params.commentId;
     const userId = (req as AuthRequest).user;
     const { text } = req.body;
-
     const comment = await Comment.findById(commentId);
     if (!comment) {
       res.status(404).json({ message: "Comment not found" });
@@ -156,6 +152,7 @@ export const updateComment = async (req: Request, res: Response): Promise<void> 
     }
     comment.text = text;
     await comment.save();
+    await comment.populate("user", "username");
     res.json(comment);
   } catch (error) {
     res.status(500).json({ message: "Error updating comment", error });
@@ -197,7 +194,6 @@ export const deleteComment = async (req: Request, res: Response): Promise<void> 
   try {
     const commentId = req.params.commentId;
     const userId = (req as AuthRequest).user;
-
     const comment = await Comment.findById(commentId);
     if (!comment) {
       res.status(404).json({ message: "Comment not found" });

@@ -9,6 +9,7 @@ export interface IEvent extends Document {
   createdBy: mongoose.Types.ObjectId | { _id: string; username: string };
   participants: mongoose.Types.ObjectId[];
   likes: mongoose.Types.ObjectId[];
+  improvementResponse?: string;
 }
 
 const EventSchema: Schema = new Schema({
@@ -18,8 +19,9 @@ const EventSchema: Schema = new Schema({
   date: { type: Date, required: true },
   location: { type: String, required: true },
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-  participants: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }], 
-  likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }] 
+  participants: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+  likes: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+  improvementResponse: { type: String }
 });
 
 export default mongoose.model<IEvent>("Event", EventSchema);
