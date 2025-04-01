@@ -26,6 +26,6 @@ router.post("/:id/leave", protect, leaveEvent);
 router.post("/:id/like", protect, likeEvent);
 router.post("/:id/uploadImage", protect, upload.single("file"), uploadEventImage);
 router.get("/:id", getEventById);
-router.get("/:id/improve", improveEvent);
+router.post("/:id/improve", protect, improveEvent); 
 
 export default router;

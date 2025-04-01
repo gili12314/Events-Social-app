@@ -528,7 +528,7 @@ export const getEventById = async (req: Request, res: Response): Promise<void> =
 /**
  * @swagger
  * /event/{id}/improve:
- *   get:
+ *   post:
  *     summary: Get improvement suggestions for an event
  *     description: "Generates improvement suggestions using an external service and saves the response to the event. Only the creator can see these suggestions."
  *     tags: [Events]
@@ -546,7 +546,7 @@ export const getEventById = async (req: Request, res: Response): Promise<void> =
  *         description: Event not found.
  *       500:
  *         description: Error improving event.
- */
+ */ 
 export const improveEvent = async (req: Request, res: Response): Promise<void> => {
   try {
     const event = await Event.findById(req.params.id);
